@@ -137,6 +137,26 @@ ipcMain.handle('fs:writeFile', async (_, filePath, content) => {
   }
 });
 
+ipcMain.handle('fs:createFile', async (_, filePath) => {
+  try {
+    fs.writeFileSync(filePath, '', 'utf-8');
+    return true;
+  } catch (e) {
+    console.error('fs:createFile error', e);
+    return false;
+  }
+});
+
+ipcMain.handle('fs:createFolder', async (_, folderPath) => {
+  try {
+    fs.mkdirSync(folderPath, { recursive: true });
+    return true;
+  } catch (e) {
+    console.error('fs:createFolder error', e);
+    return false;
+  }
+});
+
 // ─── IPC: Terminal (node-pty) ───────────────────────────────
 ipcMain.handle('terminal:create', (_, cols, rows) => {
   if (ptyProcess) {

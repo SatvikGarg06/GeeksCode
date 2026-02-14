@@ -150,6 +150,13 @@ export default function App() {
         );
     }, []);
 
+    // ─── Update File Tree ─────────────────────────────────
+    const refreshTree = useCallback(async () => {
+        if (!folderPath) return;
+        const entries = await window.electronAPI.readDir(folderPath);
+        setFileEntries(entries);
+    }, [folderPath]);
+
     // ─── Save ───────────────────────────────────────────
     const handleSave = useCallback(async () => {
         if (!activeTab) return;
@@ -223,6 +230,7 @@ export default function App() {
                     onFileClick={handleFileClick}
                     activeFile={activeTab}
                     style={{ width: `${sidebarWidth}px` }}
+                    onRefresh={refreshTree}
                 />
                 <div id="sidebar-resize" onMouseDown={handleSidebarMouseDown}></div>
                 <div id="editor-panel-area">
