@@ -230,6 +230,7 @@ export default function App() {
                         <TabsBar
                             tabs={openTabs}
                             activeTab={activeTab}
+                            code_data={currentTab ? currentTab.content : ""}
                             onSwitchTab={handleSwitchTab}
                             onCloseTab={handleCloseTab}
                         />

@@ -1,8 +1,10 @@
 const { app, BrowserWindow, ipcMain, dialog, Menu, globalShortcut } = require('electron');
+const { exec } = require('child_process')
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const pty = require('node-pty');
+
 
 let mainWindow;
 let ptyProcess = null;
@@ -72,6 +74,119 @@ function createWindow() {
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
 }
+
+function ParseCode(code) {
+  const lines = code.split('\n')
+  const results = []
+
+  for (const line of lines) {
+    let i = 0
+    while (i < line.length) {
+      if (
+        line[i] === '!' &&
+        line[i + 1] === '@' &&
+        line[i + 2] === '#' &&
+        line[i + 3] === '$'
+      ) {
+        i += 4
+        if (line[i] !== '(') {
+          return 'Invalid Syntax'
+        }
+        i++ 
+        let temp = ''
+        while (i < line.length && line[i] !== ')') {
+          temp += line[i]
+          i++
+        }
+        if (i >= line.length) {
+          return 'Invalid Syntax'
+        }
+        results.push(temp)
+      }
+      i++
+    }
+  }
+  return results
+}
+function callAI(prompts){
+  let res;
+  let outputs=[]
+  for (let i=0;i<prompts.length;i++){
+    res=`int sum=0; for (int i:arr) sum+=i; cout<<sum;`
+    outputs.push(res)
+  }
+  return outputs
+}
+function placeBack(code, outputs) {
+  const lines = code.split('\n')
+  let j = 0
+  const resultLines = []
+  for (const line of lines) {
+    let i = 0
+    let newLine = ''
+    while (i < line.length) {
+      if (
+        line[i] === '!' &&
+        line[i + 1] === '@' &&
+        line[i + 2] === '#' &&
+        line[i + 3] === '$'
+      ) {
+        i += 4
+        if (line[i] !== '(') {
+          return 'Invalid Syntax'
+        }
+        i++
+        while (i < line.length && line[i] !== ')') {
+          i++
+        }
+        if (i >= line.length) {
+          return'Invalid Syntax'
+        }
+        newLine += outputs[j]
+        j++
+        i++ 
+      } else {
+        newLine += line[i]
+        i++
+      }
+    }
+    resultLines.push(newLine)
+  }
+  return resultLines.join('\n')
+}
+function runCpp(code) {
+  return new Promise((resolve) => {
+    const tmpDir = os.tmpdir()
+    const cppPath = path.join(tmpDir, 'temp.cpp')
+    const exePath = path.join(tmpDir, 'temp_exec')
+
+    fs.writeFileSync(cppPath, code)
+
+    exec(
+      `g++ "${cppPath}" -o "${exePath}" && "${exePath}"`,
+      { timeout: 3000 }, 
+      (err, stdout, stderr) => {
+        if (err) {
+          resolve({ error: stderr || err.message })
+        } else {
+          resolve({ output: stdout })
+        }
+      }
+    )
+  })
+}
+
+ipcMain.handle('submit-code', async (event, code) => {
+  let prompts=ParseCode(code)
+  let outputs=callAI(prompts)
+  outputs=placeBack(code,outputs)
+  let final=await runCpp(outputs)
+  console.log(final)
+  return {
+    success: true,
+    length: code.length
+  }
+})
 
 app.whenReady().then(createWindow);
 

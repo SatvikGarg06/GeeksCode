@@ -19,3 +19,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Tab management
     onCloseTab: (callback) => ipcRenderer.on('close-active-tab', () => callback()),
 });
+contextBridge.exposeInMainWorld('run',{
+    submit : (a) => ipcRenderer.invoke('submit-code',a)
+})
