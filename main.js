@@ -9,6 +9,8 @@ const pty = require('node-pty');
 let mainWindow;
 let ptyProcess = null;
 
+const SETTINGS_PATH = path.join(app.getPath('userData'), 'settings.json');
+
 function createWindow() {
   const isMac = process.platform === 'darwin';
 
@@ -251,6 +253,35 @@ ipcMain.handle('fs:writeFile', async (_, filePath, content) => {
     return false;
   }
 });
+
+ipcMain.handle('fs:createFile', async (_, filePath) => {
+  try {
+    fs.writeFileSync(filePath, '', 'utf-8');
+    return true;
+  } catch (e) {
+    console.error('fs:createFile error', e);
+    return false;
+  }
+});
+
+ipcMain.handle('fs:createFolder', async (_, folderPath) => {
+  try {
+    fs.mkdirSync(folderPath, { recursive: true });
+    return true;
+  } catch (e) {
+    console.error('fs:createFolder error', e);
+    return false;
+  }
+});
+
+// ─── IPC: Settings ───────────────────────────────
+ipcMain.handle('settings:getLastFolder', () => {
+  return loadSettings().lastFolder || null;
+})
+
+ipcMain.handle('settings:setLastFolder', (_, folderPath) => {
+  saveSettings({ lastFolder: folderPath });
+})
 
 // ─── IPC: Terminal (node-pty) ───────────────────────────────
 ipcMain.handle('terminal:create', (_, cols, rows) => {

@@ -30,6 +30,25 @@ export default function App() {
         document.body.classList.toggle('light', !isDark);
     }, [isDark]);
 
+    // ─── Start from last-opened folder ──────────────
+    useEffect(() => {
+        const loadLastFolder = async () => {
+            const lastFolder = await window.electronAPI.getLastFolder();
+            if (!lastFolder) return;
+
+            // Check folder exists and open folder
+            const entries = await window.electronAPI.readDir(lastFolder);
+            if (entries) {
+                setFolderPath(lastFolder);
+                setFolderName(lastFolder.split('/').pop() || lastFolder.split('\\').pop());
+                setFileEntries(entries);
+
+                window.electronAPI.setTerminalCwd(lastFolder);
+            }
+        }
+        loadLastFolder();
+    }, []);
+
     // ─── Titlebar height (macOS vs windows) ──────────────
     useEffect(() => {
         const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
@@ -87,6 +106,9 @@ export default function App() {
 
         const entries = await window.electronAPI.readDir(path);
         setFileEntries(entries);
+
+        // Save last opened folder
+        window.electronAPI.setLastFolder(path);
 
         // Update terminal CWD
         window.electronAPI.setTerminalCwd(path);
@@ -149,6 +171,13 @@ export default function App() {
             })
         );
     }, []);
+
+    // ─── Update File Tree ─────────────────────────────────
+    const refreshTree = useCallback(async () => {
+        if (!folderPath) return;
+        const entries = await window.electronAPI.readDir(folderPath);
+        setFileEntries(entries);
+    }, [folderPath]);
 
     // ─── Save ───────────────────────────────────────────
     const handleSave = useCallback(async () => {
@@ -223,6 +252,7 @@ export default function App() {
                     onFileClick={handleFileClick}
                     activeFile={activeTab}
                     style={{ width: `${sidebarWidth}px` }}
+                    onRefresh={refreshTree}
                 />
                 <div id="sidebar-resize" onMouseDown={handleSidebarMouseDown}></div>
                 <div id="editor-panel-area">
