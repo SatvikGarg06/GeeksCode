@@ -151,6 +151,7 @@ const folderHeader = document.getElementById('folder-header');
 const folderNameEl = document.getElementById('folder-name');
 const openFolderPrompt = document.getElementById('open-folder-prompt');
 const tabsContainer = document.getElementById('tabs-container');
+const tabsBar = document.getElementById('tabs-bar');
 const monacoContainer = document.getElementById('monaco-container');
 const welcomeView = document.getElementById('welcome-view');
 const panel = document.getElementById('panel');
@@ -164,12 +165,32 @@ document.getElementById('btn-open-folder').addEventListener('click', openFolder)
 document.getElementById('btn-welcome-open').addEventListener('click', openFolder);
 document.getElementById('btn-panel-close').addEventListener('click', togglePanel);
 
+// ─── Tab Bar Visibility ─────────────────────────────
+function updateTabBarVisibility() {
+    if (openTabs.length > 0) {
+        tabsBar.classList.add('has-tabs');
+    } else {
+        tabsBar.classList.remove('has-tabs');
+    }
+}
+
 // ─── Activity Bar ───────────────────────────────────
 document.querySelectorAll('.activity-icon[data-panel]').forEach((icon) => {
     icon.addEventListener('click', () => {
         document.querySelectorAll('.activity-icon').forEach((i) => i.classList.remove('active'));
         icon.classList.add('active');
     });
+});
+
+// ─── Theme Toggle ───────────────────────────────────
+let isDarkTheme = true;
+document.getElementById('theme-toggle').addEventListener('click', () => {
+    isDarkTheme = !isDarkTheme;
+    document.body.classList.toggle('light', !isDarkTheme);
+    // Sync Monaco editor theme
+    if (typeof monaco !== 'undefined') {
+        monaco.editor.setTheme(isDarkTheme ? 'codeEditorDark' : 'codeEditorLight');
+    }
 });
 
 // ─── IPC: Close Tab from Main Process (Cmd+W) ──────
@@ -199,6 +220,27 @@ require(['vs/editor/editor.main'], function () {
             'editorSuggestWidget.background': '#252526',
             'editorSuggestWidget.border': '#454545',
             'editorSuggestWidget.selectedBackground': '#04395e',
+        },
+    });
+
+    // Define light theme
+    monaco.editor.defineTheme('codeEditorLight', {
+        base: 'vs',
+        inherit: true,
+        rules: [],
+        colors: {
+            'editor.background': '#ffffff',
+            'editor.foreground': '#333333',
+            'editorCursor.foreground': '#333333',
+            'editor.lineHighlightBackground': '#f0f0f0',
+            'editorLineNumber.foreground': '#999999',
+            'editor.selectionBackground': '#add6ff',
+            'editor.inactiveSelectionBackground': '#e5ebf1',
+            'editorWidget.background': '#f3f3f3',
+            'editorWidget.border': '#c8c8c8',
+            'editorSuggestWidget.background': '#f3f3f3',
+            'editorSuggestWidget.border': '#c8c8c8',
+            'editorSuggestWidget.selectedBackground': '#d6ebff',
         },
     });
 
@@ -422,6 +464,7 @@ function addTabElement(filePath, fileName, lang) {
     });
 
     tabsContainer.appendChild(tabEl);
+    updateTabBarVisibility();
 }
 
 function switchToTab(filePath) {
@@ -478,6 +521,7 @@ function closeTab(filePath) {
         statusLanguage.textContent = 'Plain Text';
         statusPosition.textContent = 'Ln 1, Col 1';
     }
+    updateTabBarVisibility();
 }
 
 function updateTabUI(filePath) {
