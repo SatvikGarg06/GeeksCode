@@ -39,6 +39,15 @@ export default function TabsBar({ tabs, activeTab, onSwitchTab, onCloseTab }) {
                     );
                 })}
             </div>
+            {hasTabs && (
+                <div className="editor-title-actions">
+                    <button className="run-code-btn" title="Run Code">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M3.78 2a.77.77 0 0 0-.78.78v10.44c0 .43.35.78.78.78.14 0 .27-.04.39-.11l8.44-5.22a.78.78 0 0 0 0-1.34L4.17 2.11A.77.77 0 0 0 3.78 2z" />
+                        </svg>
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
