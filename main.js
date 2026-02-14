@@ -7,6 +7,8 @@ const pty = require('node-pty');
 let mainWindow;
 let ptyProcess = null;
 
+const SETTINGS_PATH = path.join(app.getPath('userData'), 'settings.json');
+
 function createWindow() {
   const isMac = process.platform === 'darwin';
 
@@ -71,6 +73,23 @@ function createWindow() {
     { role: 'windowMenu' },
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
+}
+
+function loadSettings() {
+  try {
+    return JSON.parse(fs.readFileSync(SETTINGS_PATH, 'utf-8'));
+  } catch (e) {
+    console.error(e);
+    return {};
+  }
+}
+
+function saveSettings(settings) {
+  try {
+    fs.writeFileSync(SETTINGS_PATH, JSON.stringify({ ...loadSettings(), ...settings }), 'utf-8');
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 app.whenReady().then(createWindow);
@@ -156,6 +175,15 @@ ipcMain.handle('fs:createFolder', async (_, folderPath) => {
     return false;
   }
 });
+
+// ─── IPC: Settings ───────────────────────────────
+ipcMain.handle('settings:getLastFolder', () => {
+  return loadSettings().lastFolder || null;
+})
+
+ipcMain.handle('settings:setLastFolder', (_, folderPath) => {
+  saveSettings({ lastFolder: folderPath });
+})
 
 // ─── IPC: Terminal (node-pty) ───────────────────────────────
 ipcMain.handle('terminal:create', (_, cols, rows) => {

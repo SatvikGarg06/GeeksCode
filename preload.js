@@ -11,6 +11,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createFile: (filePath) => ipcRenderer.invoke('fs:createFile', filePath),
     createFolder: (folderPath) => ipcRenderer.invoke('fs:createFolder', folderPath),
 
+    // Settings
+    getLastFolder: () => ipcRenderer.invoke('settings:getLastFolder'),
+    setLastFolder: (folderPath) => ipcRenderer.invoke('settings:setLastFolder', folderPath),
+
     // Terminal
     createTerminal: (cols, rows) => ipcRenderer.invoke('terminal:create', cols, rows),
     writeTerminal: (data) => ipcRenderer.send('terminal:write', data),
