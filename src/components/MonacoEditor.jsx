@@ -8,7 +8,7 @@ loader.config({ monaco });
 export default function MonacoEditor({
     activeTab,
     tabs,
-    isDark,
+    theme,
     onCursorChange,
     onContentChange,
     onSave,
@@ -21,66 +21,95 @@ export default function MonacoEditor({
         editorRef.current = editor;
 
         // Define dark theme
-        mon.editor.defineTheme('codeEditorDark', {
+        mon.editor.defineTheme('vs-dark', {
             base: 'vs-dark',
             inherit: true,
             rules: [],
             colors: {
                 'editor.background': '#1e1e1e',
                 'editor.foreground': '#d4d4d4',
-                'editorCursor.foreground': '#aeafad',
-                'editor.lineHighlightBackground': '#2a2d2e',
-                'editorLineNumber.foreground': '#858585',
-                'editor.selectionBackground': '#264f78',
-                'editor.inactiveSelectionBackground': '#3a3d41',
-                'editorWidget.background': '#252526',
-                'editorWidget.border': '#454545',
-                'editorSuggestWidget.background': '#252526',
-                'editorSuggestWidget.border': '#454545',
-                'editorSuggestWidget.selectedBackground': '#04395e',
             },
         });
 
-        // Define light theme
-        mon.editor.defineTheme('codeEditorLight', {
-            base: 'vs',
+        // Define Monokai theme
+        mon.editor.defineTheme('monokai-dark', {
+            base: 'vs-dark',
             inherit: true,
-            rules: [],
+            rules: [
+                { token: 'comment', foreground: '75715e' },
+                { token: 'keyword', foreground: 'f92672' },
+                { token: 'string', foreground: 'e6db74' },
+                { token: 'number', foreground: 'ae81ff' },
+                { token: 'type', foreground: '66d9ef' },
+            ],
             colors: {
-                'editor.background': '#ffffff',
-                'editor.foreground': '#333333',
-                'editorCursor.foreground': '#333333',
-                'editor.lineHighlightBackground': '#f0f0f0',
-                'editorLineNumber.foreground': '#999999',
-                'editor.selectionBackground': '#add6ff',
-                'editor.inactiveSelectionBackground': '#e5ebf1',
-                'editorWidget.background': '#f3f3f3',
-                'editorWidget.border': '#c8c8c8',
-                'editorSuggestWidget.background': '#f3f3f3',
-                'editorSuggestWidget.border': '#c8c8c8',
-                'editorSuggestWidget.selectedBackground': '#d6ebff',
+                'editor.background': '#272822',
+                'editor.foreground': '#f8f8f2',
+                'editorCursor.foreground': '#f8f8f0',
+                'editor.lineHighlightBackground': '#3e3d32',
+                'editor.selectionBackground': '#49483e',
+                'editorSuggestWidget.background': '#272822',
+                'editorSuggestWidget.border': '#75715e',
             },
         });
 
-        mon.editor.setTheme(isDark ? 'codeEditorDark' : 'codeEditorLight');
+        mon.editor.setTheme(theme);
 
         // Cursor position tracking
         editor.onDidChangeCursorPosition((e) => {
             onCursorChange(e.position.lineNumber, e.position.column);
         });
 
+        // Inline completions (AI Autocomplete)
+        mon.languages.registerInlineCompletionsProvider({
+            provideInlineCompletions: async (model, position) => {
+                const textUntilPosition = model.getValueInRange({
+                    startLineNumber: 1,
+                    startColumn: 1,
+                    endLineNumber: position.lineNumber,
+                    endColumn: position.column,
+                });
+
+                if (textUntilPosition.trim().length < 5) return { items: [] };
+
+                // Get some context after position too
+                const textAfterPosition = model.getValueInRange({
+                    startLineNumber: position.lineNumber,
+                    startColumn: position.column,
+                    endLineNumber: position.lineNumber + 5,
+                    endColumn: 1,
+                });
+
+                const completion = await window.electronAPI.completeAI(`${textUntilPosition}<CURSOR>${textAfterPosition}`);
+                
+                if (!completion) return { items: [] };
+
+                return {
+                    items: [{
+                        insertText: completion,
+                        range: {
+                            startLineNumber: position.lineNumber,
+                            startColumn: position.column,
+                            endLineNumber: position.lineNumber,
+                            endColumn: position.column,
+                        }
+                    }]
+                };
+            }
+        });
+
         // Ctrl/Cmd + S to save
         editor.addCommand(mon.KeyMod.CtrlCmd | mon.KeyCode.KeyS, () => {
             onSave();
         });
-    }, [isDark, onCursorChange, onSave, editorRef]);
+    }, [onCursorChange, onSave, editorRef]);
 
-    // Sync theme when isDark changes
+    // Sync theme when it changes
     useEffect(() => {
         if (monacoRef.current) {
-            monacoRef.current.editor.setTheme(isDark ? 'codeEditorDark' : 'codeEditorLight');
+            monacoRef.current.editor.setTheme(theme);
         }
-    }, [isDark]);
+    }, [theme]);
 
     // Find active tab
     const currentTab = tabs.find((t) => t.filePath === activeTab);
@@ -93,7 +122,7 @@ export default function MonacoEditor({
                 key={currentTab.filePath}
                 defaultValue={currentTab.content}
                 language={currentTab.language}
-                theme={isDark ? 'codeEditorDark' : 'codeEditorLight'}
+                theme={theme}
                 onMount={handleEditorDidMount}
                 onChange={(value) => onContentChange(currentTab.filePath, value)}
                 options={{
@@ -119,6 +148,7 @@ export default function MonacoEditor({
                     renderLineHighlight: 'all',
                     matchBrackets: 'always',
                     suggest: { showWords: true },
+                    inlineSuggest: { enabled: true }, // Enable inline suggestions
                 }}
             />
         </div>

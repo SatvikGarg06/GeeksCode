@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ═══════════════════════════════════════════════════
    VS Code Dark Theme – Code Editor
    ═══════════════════════════════════════════════════ */
@@ -27,8 +31,10 @@
   --icon-active: #ffffff;
   --scrollbar-bg: rgba(121, 121, 121, 0.2);
   --scrollbar-hover: rgba(121, 121, 121, 0.4);
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'Menlo', 'Monaco', 'Courier New', monospace;
+  --font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-mono: "Menlo", "Monaco", "Courier New", monospace;
   --sidebar-width: 260px;
   --activitybar-width: 48px;
   --titlebar-height: 38px;
@@ -102,7 +108,10 @@ kbd,
 .icon-btn,
 .status-item,
 #status-bar {
-  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease;
 }
 
 /* ─── Scrollbar ──────────────────────────────────── */
@@ -193,7 +202,7 @@ kbd,
 }
 
 .activity-icon.active::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 6px;
@@ -421,7 +430,7 @@ kbd,
 }
 
 .tab.active::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -581,9 +590,27 @@ kbd {
   transition: background 0.2s;
 }
 
+#sidebar-resize:hover,
+#sidebar-resize.active,
 #panel-resize:hover,
-#panel-resize.active {
-  background: var(--accent);
+#panel-resize.active,
+#aichat-resize:hover,
+#aichat-resize.active {
+  background: var(--accent) !important;
+  opacity: 1;
+}
+
+#aichat-resize {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  flex-shrink: 0;
+  transition:
+    background 0.2s,
+    opacity 0.2s;
+  z-index: 10;
+  margin-left: -2px;
+  margin-right: -2px;
 }
 
 .panel-header {
@@ -659,7 +686,9 @@ body.light .icon-btn:hover {
 }
 
 .theme-toggle svg {
-  transition: transform 0.4s ease, opacity 0.3s ease;
+  transition:
+    transform 0.4s ease,
+    opacity 0.3s ease;
 }
 
 .theme-toggle .icon-sun {
@@ -728,4 +757,80 @@ body.light .theme-toggle .icon-moon {
 
 .status-item svg {
   flex-shrink: 0;
+}
+
+.theme-selector-container {
+  padding-right: 4px;
+}
+
+.theme-select {
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+  padding: 0 4px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.theme-select:hover {
+  opacity: 1;
+}
+
+.theme-select option {
+  background: #252526;
+  color: #fff;
+}
+
+body.light .theme-select {
+  color: #fff;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 0 8px;
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+.zoom-btn {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1;
+  transition: color 0.2s, background 0.2s;
+  border-radius: 2px;
+}
+
+.zoom-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.zoom-value {
+  font-size: 10px;
+  color: #aaa;
+  min-width: 34px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.zoom-value:hover {
+  color: #fff;
+}
+
+body.light .zoom-btn {
+  color: #fff;
+}
+body.light .zoom-value {
+  color: #fff;
 }

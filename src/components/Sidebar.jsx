@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { FilePlus, FolderPlus } from 'lucide-react';
 import { getFileIcon, FOLDER_ICON, FOLDER_OPEN_ICON } from '../utils/fileUtils';
 
 function TreeItem({ entry, depth, onFileClick, activeFile }) {
@@ -35,14 +36,18 @@ function TreeItem({ entry, depth, onFileClick, activeFile }) {
                                 <path d="M6 4l4 4-4 4z" />
                             </svg>
                         </span>
-                        <span className="file-icon">{isOpen ? FOLDER_OPEN_ICON : FOLDER_ICON}</span>
+                        <span className="file-icon">
+                            <span className={`codicon codicon-${isOpen ? FOLDER_OPEN_ICON.icon : FOLDER_ICON.icon}`} style={{ color: FOLDER_ICON.color }}></span>
+                        </span>
                     </>
                 ) : (
                     <>
                         <span className="chevron" style={{ visibility: 'hidden' }}>
                             <svg viewBox="0 0 16 16"><path /></svg>
                         </span>
-                        <span className="file-icon">{getFileIcon(entry.name).icon}</span>
+                        <span className="file-icon">
+                            <span className={`codicon codicon-${getFileIcon(entry.name).icon}`} style={{ color: getFileIcon(entry.name).color }}></span>
+                        </span>
                     </>
                 )}
                 <span className="file-label">{entry.name}</span>
@@ -64,11 +69,44 @@ function TreeItem({ entry, depth, onFileClick, activeFile }) {
     );
 }
 
-export default function Sidebar({ folderName, folderPath, entries, onOpenFolder, onFileClick, activeFile, style }) {
+import CodeforcesExplorer from './CodeforcesExplorer';
+import CodeRunner from './CodeRunner';
+
+export default function Sidebar({ 
+    folderName, 
+    folderPath, 
+    entries, 
+    onOpenFolder, 
+    onFileClick, 
+    onCreateFile,
+    onCreateFolder,
+    activeFile, 
+    activePanel,
+    onCfSettingsClick,
+    onOpenProblem,
+    style 
+}) {
+    if (activePanel === 'codeforces') {
+        return <CodeforcesExplorer onOpenSettings={onCfSettingsClick} onOpenProblem={onOpenProblem} />;
+    }
+    if (activePanel === 'run') {
+        return <CodeRunner activeFile={activeFile} />;
+    }
+
     return (
         <div id="sidebar" style={style}>
-            <div className="sidebar-header">
+            <div className="sidebar-header flex justify-between items-center pr-2">
                 <span className="sidebar-title">EXPLORER</span>
+                {folderPath && (
+                    <div className="flex space-x-1">
+                        <button onClick={onCreateFile} title="New File" className="p-1 hover:bg-white/10 rounded">
+                            <FilePlus size={14} className="opacity-70 hover:opacity-100" />
+                        </button>
+                        <button onClick={onCreateFolder} title="New Folder" className="p-1 hover:bg-white/10 rounded">
+                            <FolderPlus size={14} className="opacity-70 hover:opacity-100" />
+                        </button>
+                    </div>
+                )}
             </div>
             {folderPath ? (
                 <>

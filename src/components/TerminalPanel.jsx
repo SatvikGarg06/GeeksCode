@@ -2,11 +2,38 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 
-export default function TerminalPanel({ visible, onClose, panelHeight, onResize, isDark }) {
+export default function TerminalPanel({ visible, onClose, panelHeight, onResize, theme }) {
     const containerRef = useRef(null);
     const termRef = useRef(null);
     const fitAddonRef = useRef(null);
     const initializedRef = useRef(false);
+
+    const getXTermTheme = (themeName) => {
+        const isDark = themeName.includes('dark');
+        const isMonokai = themeName === 'monokai-dark';
+        return {
+            background: isMonokai ? '#272822' : (isDark ? '#1e1e1e' : '#ffffff'),
+            foreground: isDark ? '#cccccc' : '#333333',
+            cursor: isDark ? '#aeafad' : '#333333',
+            selectionBackground: isDark ? '#264f78' : '#add6ff',
+            black: '#000000',
+            red: '#cd3131',
+            green: '#0dbc79',
+            yellow: '#e5e510',
+            blue: '#2472c8',
+            magenta: '#bc3fbc',
+            cyan: '#11a8cd',
+            white: '#e5e5e5',
+            brightBlack: '#666666',
+            brightRed: '#f14c4c',
+            brightGreen: '#23d18b',
+            brightYellow: '#f5f543',
+            brightBlue: '#3b8eea',
+            brightMagenta: '#d670d6',
+            brightCyan: '#29b8db',
+            brightWhite: '#e5e5e5',
+        };
+    };
 
     // Initialize terminal once when visible
     useEffect(() => {
@@ -15,28 +42,7 @@ export default function TerminalPanel({ visible, onClose, panelHeight, onResize,
         const term = new Terminal({
             fontFamily: "'Menlo', 'Monaco', 'Courier New', monospace",
             fontSize: 13,
-            theme: {
-                background: isDark ? '#1e1e1e' : '#ffffff',
-                foreground: isDark ? '#cccccc' : '#333333',
-                cursor: isDark ? '#aeafad' : '#333333',
-                selectionBackground: isDark ? '#264f78' : '#add6ff',
-                black: '#000000',
-                red: '#cd3131',
-                green: '#0dbc79',
-                yellow: '#e5e510',
-                blue: '#2472c8',
-                magenta: '#bc3fbc',
-                cyan: '#11a8cd',
-                white: '#e5e5e5',
-                brightBlack: '#666666',
-                brightRed: '#f14c4c',
-                brightGreen: '#23d18b',
-                brightYellow: '#f5f543',
-                brightBlue: '#3b8eea',
-                brightMagenta: '#d670d6',
-                brightCyan: '#29b8db',
-                brightWhite: '#e5e5e5',
-            },
+            theme: getXTermTheme(theme),
             cursorBlink: true,
             allowTransparency: true,
         });
@@ -67,7 +73,14 @@ export default function TerminalPanel({ visible, onClose, panelHeight, onResize,
         window.electronAPI.onTerminalData((data) => {
             term.write(data);
         });
-    }, [visible, isDark]);
+    }, [visible]);
+
+    // Sync theme
+    useEffect(() => {
+        if (termRef.current) {
+            termRef.current.options.theme = getXTermTheme(theme);
+        }
+    }, [theme]);
 
     // Fit on visibility changes
     useEffect(() => {
@@ -92,6 +105,8 @@ export default function TerminalPanel({ visible, onClose, panelHeight, onResize,
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
             document.body.style.cursor = '';
+            const resizer = document.getElementById('panel-resize');
+            if (resizer) resizer.classList.remove('active');
             if (fitAddonRef.current) {
                 fitAddonRef.current.fit();
                 const dims = fitAddonRef.current.proposeDimensions();
@@ -101,6 +116,8 @@ export default function TerminalPanel({ visible, onClose, panelHeight, onResize,
             }
         };
 
+        const resizer = document.getElementById('panel-resize');
+        if (resizer) resizer.classList.add('active');
         document.body.style.cursor = 'row-resize';
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);

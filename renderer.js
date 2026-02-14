@@ -61,39 +61,39 @@ const EXT_LANG_MAP = {
 
 // ─── Extension → Icon/Color Map ────────────────────
 const FILE_ICONS = {
-    '.js': { icon: '📜', color: '#e8d44d' },
-    '.jsx': { icon: '⚛️', color: '#61dafb' },
-    '.ts': { icon: '📘', color: '#3178c6' },
-    '.tsx': { icon: '⚛️', color: '#3178c6' },
-    '.py': { icon: '🐍', color: '#3776ab' },
-    '.html': { icon: '🌐', color: '#e34c26' },
-    '.css': { icon: '🎨', color: '#563d7c' },
-    '.json': { icon: '📋', color: '#a8b9cc' },
-    '.md': { icon: '📝', color: '#083fa1' },
-    '.yml': { icon: '⚙️', color: '#cb171e' },
-    '.yaml': { icon: '⚙️', color: '#cb171e' },
-    '.xml': { icon: '📄', color: '#f26522' },
-    '.sh': { icon: '💲', color: '#4eaa25' },
-    '.go': { icon: '🔵', color: '#00add8' },
-    '.rs': { icon: '🦀', color: '#dea584' },
-    '.java': { icon: '☕', color: '#b07219' },
-    '.c': { icon: '🔧', color: '#555555' },
-    '.cpp': { icon: '🔧', color: '#f34b7d' },
-    '.rb': { icon: '💎', color: '#cc342d' },
-    '.php': { icon: '🐘', color: '#777bb4' },
-    '.swift': { icon: '🍎', color: '#f05138' },
-    '.kt': { icon: '🟣', color: '#a97bff' },
-    '.dart': { icon: '🎯', color: '#0175c2' },
-    '.vue': { icon: '💚', color: '#41b883' },
-    '.svg': { icon: '🖼️', color: '#ffb13b' },
-    '.gitignore': { icon: '🚫', color: '#f05032' },
-    '.env': { icon: '🔒', color: '#ecd53f' },
-    '.lock': { icon: '🔒', color: '#888888' },
+  '.js': { icon: 'symbol-method', color: '#f7df1e' },
+  '.jsx': { icon: 'symbol-structure', color: '#61dafb' },
+  '.ts': { icon: 'symbol-type-parameter', color: '#3178c6' },
+  '.tsx': { icon: 'symbol-structure', color: '#3178c6' },
+  '.py': { icon: 'symbol-variable', color: '#3776ab' },
+  '.html': { icon: 'code', color: '#e34c26' },
+  '.css': { icon: 'symbol-color', color: '#264de4' },
+  '.json': { icon: 'symbol-constant', color: '#f1c40f' },
+  '.md': { icon: 'book', color: '#083fa1' },
+  '.yml': { icon: 'gear', color: '#cb171e' },
+  '.yaml': { icon: 'gear', color: '#cb171e' },
+  '.xml': { icon: 'code', color: '#ff6600' },
+  '.sh': { icon: 'terminal', color: '#4eaa25' },
+  '.go': { icon: 'symbol-namespace', color: '#00add8' },
+  '.rs': { icon: 'symbol-interface', color: '#dea584' },
+  '.java': { icon: 'symbol-class', color: '#b07219' },
+  '.c': { icon: 'symbol-field', color: '#555555' },
+  '.cpp': { icon: 'symbol-field', color: '#f34b7d' },
+  '.rb': { icon: 'symbol-keyword', color: '#cc342d' },
+  '.php': { icon: 'symbol-method', color: '#777bb4' },
+  '.swift': { icon: 'symbol-property', color: '#f05138' },
+  '.kt': { icon: 'symbol-keyword', color: '#a97bff' },
+  '.dart': { icon: 'symbol-event', color: '#0175c2' },
+  '.vue': { icon: 'symbol-snippet', color: '#41b883' },
+  '.svg': { icon: 'image', color: '#ffb13b' },
+  '.gitignore': { icon: 'source-control', color: '#f05032' },
+  '.env': { icon: 'settings-gear', color: '#ecd53f' },
+  '.lock': { icon: 'lock', color: '#888888' },
 };
 
-const DEFAULT_ICON = { icon: '📄', color: '#cccccc' };
-const FOLDER_ICON = '📁';
-const FOLDER_OPEN_ICON = '📂';
+const DEFAULT_ICON = { icon: 'file', color: '#cccccc' };
+const FOLDER_ICON = { icon: 'folder', color: '#cccccc' };
+const FOLDER_OPEN_ICON = { icon: 'folder-opened', color: '#cccccc' };
 
 function getFileIcon(filename) {
     const lower = filename.toLowerCase();
@@ -357,14 +357,16 @@ async function loadDirectory(dirPath, parentEl, depth) {
                 if (isOpen) {
                     childrenEl.classList.remove('open');
                     chevron.classList.remove('open');
-                    itemEl.querySelector('.file-icon').textContent = FOLDER_ICON;
+                    const iconInfo = FOLDER_ICON;
+                    itemEl.querySelector('.file-icon').innerHTML = `<span class="codicon codicon-${iconInfo.icon}" style="color: ${iconInfo.color}"></span>`;
                 } else {
                     if (childrenEl.children.length === 0) {
                         await loadDirectory(entry.path, childrenEl, depth + 1);
                     }
                     childrenEl.classList.add('open');
                     chevron.classList.add('open');
-                    itemEl.querySelector('.file-icon').textContent = FOLDER_OPEN_ICON;
+                    const iconInfo = FOLDER_OPEN_ICON;
+                    itemEl.querySelector('.file-icon').innerHTML = `<span class="codicon codicon-${iconInfo.icon}" style="color: ${iconInfo.color}"></span>`;
                 }
             });
         } else {
@@ -389,7 +391,7 @@ function createTreeItem(entry, depth) {
           <path d="M6 4l4 4-4 4z"/>
         </svg>
       </span>
-      <span class="file-icon">${FOLDER_ICON}</span>
+      <span class="file-icon"><span class="codicon codicon-${FOLDER_ICON.icon}" style="color: ${FOLDER_ICON.color}"></span></span>
       <span class="file-label">${entry.name}</span>
     `;
     } else {
@@ -398,7 +400,7 @@ function createTreeItem(entry, depth) {
       <span class="chevron" style="visibility:hidden">
         <svg viewBox="0 0 16 16"><path/></svg>
       </span>
-      <span class="file-icon">${iconInfo.icon}</span>
+      <span class="file-icon"><span class="codicon codicon-${iconInfo.icon}" style="color: ${iconInfo.color}"></span></span>
       <span class="file-label">${entry.name}</span>
     `;
     }
@@ -442,7 +444,7 @@ function addTabElement(filePath, fileName, lang) {
     tabEl.className = 'tab';
     tabEl.dataset.path = filePath;
     tabEl.innerHTML = `
-    <span class="tab-icon">${iconInfo.icon}</span>
+    <span class="tab-icon"><span class="codicon codicon-${iconInfo.icon}" style="color: ${iconInfo.color}"></span></span>
     <span class="tab-label">${fileName}</span>
     <span class="tab-dirty"></span>
     <span class="tab-close">
