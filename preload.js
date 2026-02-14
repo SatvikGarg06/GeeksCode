@@ -56,4 +56,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createFile: (filePath) => ipcRenderer.invoke('fs:createFile', filePath),
     createFolder: (folderPath) => ipcRenderer.invoke('fs:createFolder', folderPath),
     destroySession: (sessionId) => ipcRenderer.invoke('ai:destroy-session', sessionId),
+    deleteModel: () => ipcRenderer.invoke('ai:delete-model'),
 });

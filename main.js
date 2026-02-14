@@ -16,7 +16,29 @@ let context = null;
 const sessions = new Map(); // Map of sessionId -> LlamaChatSession
 const initializingSessions = new Set(); // To prevent race conditions in init
 const EXPECTED_MODEL_SIZE = 873582624;
-const deepSeekModelUrl = "https://huggingface.co/bartowski/deepseek-coder-1.3b-instruct-GGUF/resolve/main/deepseek-coder-1.3b-instruct-Q4_K_M.gguf";
+// ls ~/.config/code-editor/deepseek-1.3b.gguf && rm ~/.config/code-editor/deepseek-1.3b.gguf
+// /home/shivam/.config/code-editor/deepseek-1.3b.gguf
+const deepSeekModelUrl = "https://huggingface.co/TheBloke/deepseek-coder-1.3b-instruct-GGUF/resolve/main/deepseek-coder-1.3b-instruct.Q4_K_M.gguf";
+
+// ... existing code ...
+
+ipcMain.handle('ai:delete-model', async () => {
+    const modelPath = path.join(app.getPath('userData'), 'deepseek-1.3b.gguf');
+    try {
+        if (fs.existsSync(modelPath)) {
+            fs.unlinkSync(modelPath);
+            model = null; // Reset global model reference
+            context = null; // Reset global context reference
+            sessions.clear(); // Clear all sessions
+            globalAIInitPromise = null; // Allow re-init
+            return true;
+        }
+        return false;
+    } catch (e) {
+        console.error('Error deleting model:', e);
+        return false;
+    }
+});
 
 function createWindow() {
   const isMac = process.platform === 'darwin';

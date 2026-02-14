@@ -38,6 +38,20 @@ const ModelDownloadModal = ({ onClose, onDownloadComplete }) => {
         }
     };
 
+    const handleDelete = async () => {
+        if (window.electronAPI && window.electronAPI.deleteModel) {
+            try {
+                await window.electronAPI.deleteModel();
+                setIsComplete(false);
+                setProgress(0);
+                setError(null);
+                // Optional: Trigger redownload immediately or just let user click download
+            } catch (e) {
+                setError("Failed to delete model: " + e.message);
+            }
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div className="bg-[#1e1e1e] border border-[#2b2b2b] rounded-lg shadow-2xl w-[500px] p-6 text-vscode-text animate-fade-in relative">
@@ -88,6 +102,23 @@ const ModelDownloadModal = ({ onClose, onDownloadComplete }) => {
                                 className="px-6 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded shadow-lg transition-all transform hover:scale-105"
                             >
                                 Download Model (1.3GB)
+                            </button>
+                        </div>
+                    )}
+
+                    {!downloading && isComplete && (
+                        <div className="flex space-x-3 mt-4">
+                            <button
+                                onClick={handleDelete}
+                                className="px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded transition-colors border border-red-900/50"
+                            >
+                                Delete Model
+                            </button>
+                            <button
+                                onClick={onClose}
+                                className="px-6 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded shadow-lg"
+                            >
+                                Done
                             </button>
                         </div>
                     )}
